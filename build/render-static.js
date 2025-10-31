@@ -62,10 +62,9 @@ export async function renderStaticPage(route, outputDir = '.next/static', manife
         return { success: false, reason: 'dynamic-no-paths' }
       }
 
-      // 动态路由通常也需要 getStaticProps 来获取每个路径的数据
+      // getStaticProps 是可选的，没有就用空 props
       if (!getStaticProps) {
-        console.log(`⚠️  ${route.path} 动态路由缺少 getStaticProps，跳过静态生成 → SSR`)
-        return { success: false, reason: 'dynamic-no-props' }
+        console.log(`⚠️  ${route.path} 动态路由没有 getStaticProps，将使用空 props 生成`)
       }
 
       // 调用 getStaticPaths 获取所有需要生成的路径

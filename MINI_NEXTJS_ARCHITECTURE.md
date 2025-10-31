@@ -97,10 +97,27 @@ for (route in manifest.routes) {
 }
 ```
 
-### Static by Default 策略
-- ✅ 有 `getServerSideProps` → SSR（运行时渲染）
-- ✅ 无 `getServerSideProps` → SSG（构建时渲染）
-- ✅ 动态路由 + `getStaticPaths` → 预渲染所有路径
+### 渲染模式决策规则
+
+#### 静态路由（如 `/about`）
+| 导出函数 | 渲染模式 | 说明 |
+|---------|---------|------|
+| 无任何函数 | SSG（纯静态） | 构建时生成，无数据 |
+| `getStaticProps` | SSG（带数据） | 构建时调用获取数据 |
+| `getServerSideProps` | SSR | 每次请求时运行 |
+
+#### 动态路由（如 `/blog/[id]`）
+| 导出函数组合 | 渲染模式 | 行为 |
+|------------|---------|------|
+| `getStaticPaths` + `getStaticProps` | SSG | 构建时生成指定路径（常见） |
+| `getStaticPaths`（无 `getStaticProps`）| SSG | 构建时生成，使用空 props |
+| 仅 `getServerSideProps` | SSR | 每次请求动态渲染，**不需要** `getStaticPaths` |
+| 无任何函数 | SSR（fallback） | 构建时跳过，运行时动态渲染 |
+
+#### 关键规则
+- ✅ **动态路由 + SSG**：必须有 `getStaticPaths`，`getStaticProps` 可选
+- ✅ **动态路由 + SSR**：只需 `getServerSideProps`，不需要 `getStaticPaths`
+- ❌ **不能混用**：同一页面不能同时导出 `getServerSideProps` 和 `getStaticPaths`
 
 ### Manifest 注入
 ```javascript
