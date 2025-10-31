@@ -1,0 +1,24 @@
+{
+  "name": "mini-nextjs-page-router",
+  "version": "1.0.0",
+  "description": "A minimal implementation of Next.js Page Router for learning purposes",
+  "type": "module",
+  "scripts": {
+    "build": "tsx build/index.js",
+    "start": "tsx server/index.js",
+    "dev": "tsx server/index.js"
+  },
+  "keywords": ["next.js", "react", "ssr", "ssg", "learning"],
+  "author": "junejunli",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "vite": "^5.0.0",
+    "tsx": "^4.7.0"
+  }
+}
