@@ -171,7 +171,6 @@ This is an **educational project** focused on core concepts, omitting production
 
 - **Architecture**: [MINI_NEXTJS_ARCHITECTURE.md](./MINI_NEXTJS_ARCHITECTURE.md) - Detailed technical architecture
 - **Performance**: [NEXTJS_PERFORMANCE_OPTIMIZATIONS.md](./NEXTJS_PERFORMANCE_OPTIMIZATIONS.md) - Next.js optimization comparison
-- **Development Guide**: [CLAUDE.md](./CLAUDE.md) - Development and learning guide
 
 ## 📄 License
 

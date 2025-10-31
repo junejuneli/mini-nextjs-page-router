@@ -171,7 +171,6 @@ Link 点击 → fetch JSON → 加载组件 → 更新 DOM → pushState
 
 - **架构说明**：[MINI_NEXTJS_ARCHITECTURE.md](./MINI_NEXTJS_ARCHITECTURE.md) - 详细技术架构和实现原理
 - **性能优化**：[NEXTJS_PERFORMANCE_OPTIMIZATIONS.md](./NEXTJS_PERFORMANCE_OPTIMIZATIONS.md) - Next.js 性能优化对比与实现建议
-- **开发指南**：[CLAUDE.md](./CLAUDE.md) - 开发和学习指南
 
 ## 📄 许可证
 
