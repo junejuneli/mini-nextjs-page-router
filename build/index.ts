@@ -71,7 +71,8 @@ try {
   })
   console.log('  ✓ 客户端代码构建完成\n')
 } catch (error) {
-  console.error('❌ 客户端构建失败:', error.message)
+  const message = error instanceof Error ? error.message : String(error)
+  console.error('❌ 客户端构建失败:', message)
   process.exit(1)
 }
 
@@ -81,8 +82,8 @@ console.log('    策略: 默认静态生成（Static by default）\n')
 
 let ssgCount = 0
 let ssrCount = 0
-let ssgPureCount = 0    // 纯静态页面（无数据）
-let ssgDataCount = 0    // 带数据的静态页面
+let ssgPureCount = 0 // 纯静态页面（无数据）
+let ssgDataCount = 0 // 带数据的静态页面
 let ssgDynamicCount = 0 // 动态路由静态页面
 
 for (const route of manifest.routes) {

@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Request, Response, NextFunction } from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { loadManifest, matchRoute } from './router.js'
@@ -50,12 +50,13 @@ app.use(express.static(path.join(projectRoot, 'public')))
  * 当用户点击 Link 组件时，会请求这个接口获取新页面的数据
  * 而不是重新加载整个 HTML 页面
  */
-app.get('*', async (req, res, next) => {
+app.get('*', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   // 检查是否为客户端导航请求
   const isClientNavigation = req.query._next_data === '1'
 
   if (!isClientNavigation) {
-    return next() // 继续到下一个中间件（HTML 渲染）
+    next() // 继续到下一个中间件（HTML 渲染）
+    return
   }
 
   try {
@@ -63,10 +64,11 @@ app.get('*', async (req, res, next) => {
     const matchResult = matchRoute(req.path)
 
     if (!matchResult) {
-      return res.status(404).json({ error: 'Page not found' })
+      res.status(404).json({ error: 'Page not found' })
+      return
     }
 
-    let data
+    let data: { pageProps: any; query: Record<string, string> }
 
     // 根据渲染类型返回数据
     if (matchResult.route.renderType === 'ssg') {
@@ -84,21 +86,22 @@ app.get('*', async (req, res, next) => {
       page: matchResult.route.path,
     })
   } catch (error) {
-    console.error('❌ 获取页面数据失败:', error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('❌ 获取页面数据失败:', message)
     res.status(500).json({ error: 'Internal server error' })
   }
 })
 
 // ==================== HTML 渲染 ====================
 
-app.get('*', async (req, res) => {
+app.get('*', async (req: Request, res: Response): Promise<void> => {
   try {
     // 匹配路由
     const matchResult = matchRoute(req.path)
 
     if (!matchResult) {
       // 404 页面
-      return res.status(404).send(`
+      res.status(404).send(`
         <!DOCTYPE html>
         <html>
         <head>
@@ -116,11 +119,12 @@ app.get('*', async (req, res) => {
         </body>
         </html>
       `)
+      return
     }
 
-    console.log(`📄 ${req.method} ${req.path} -> ${matchResult.route.renderType.toUpperCase()}`)
+    console.log(`📄 ${req.method} ${req.path} -> ${matchResult.route.renderType?.toUpperCase()}`)
 
-    let html
+    let html: string
 
     // 根据渲染类型选择渲染方式
     if (matchResult.route.renderType === 'ssg') {
@@ -139,7 +143,8 @@ app.get('*', async (req, res) => {
 
     res.send(html)
   } catch (error) {
-    console.error('❌ 渲染页面失败:', error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('❌ 渲染页面失败:', message)
 
     // 错误页面
     res.status(500).send(`
@@ -154,7 +159,7 @@ app.get('*', async (req, res) => {
           <div class="card">
             <h1>500</h1>
             <p>服务器错误</p>
-            <pre>${error.message}</pre>
+            <pre>${message}</pre>
             <a href="/" class="button">返回首页</a>
           </div>
         </div>

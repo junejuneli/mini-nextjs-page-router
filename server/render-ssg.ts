@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import type { MatchResult } from '../types/index.js'
 
 /**
  * SSG 页面服务器
@@ -11,11 +12,14 @@ import path from 'path'
 /**
  * 渲染 SSG 页面
  *
- * @param {Object} matchResult - 路由匹配结果
- * @param {string} staticDir - 静态文件目录
- * @returns {Promise<string>} HTML 字符串
+ * @param matchResult - 路由匹配结果
+ * @param staticDir - 静态文件目录
+ * @returns HTML 字符串
  */
-export async function renderSSG(matchResult, staticDir = '.next/static') {
+export async function renderSSG(
+  matchResult: MatchResult,
+  staticDir: string = '.next/static'
+): Promise<string> {
   const { route, params } = matchResult
 
   // 根据路由和参数构建文件路径
@@ -36,11 +40,14 @@ export async function renderSSG(matchResult, staticDir = '.next/static') {
 /**
  * 获取 SSG 页面的 JSON 数据（用于客户端导航）
  *
- * @param {Object} matchResult - 路由匹配结果
- * @param {string} staticDir - 静态文件目录
- * @returns {Promise<Object>} 页面数据
+ * @param matchResult - 路由匹配结果
+ * @param staticDir - 静态文件目录
+ * @returns 页面数据
  */
-export async function getSSGData(matchResult, staticDir = '.next/static') {
+export async function getSSGData(
+  matchResult: MatchResult,
+  staticDir: string = '.next/static'
+): Promise<{ pageProps: any; query: Record<string, string> }> {
   const { route, params } = matchResult
 
   const filePath = getStaticFilePath(route.path, params)
@@ -58,11 +65,11 @@ export async function getSSGData(matchResult, staticDir = '.next/static') {
 /**
  * 根据路由路径和参数生成文件路径
  *
- * @param {string} routePath - 路由路径（如 /blog/:id）
- * @param {Object} params - 参数对象（如 { id: '123' }）
- * @returns {string} 文件路径（如 /blog/123）
+ * @param routePath - 路由路径（如 /blog/:id）
+ * @param params - 参数对象（如 { id: '123' }）
+ * @returns 文件路径（如 /blog/123）
  */
-function getStaticFilePath(routePath, params) {
+function getStaticFilePath(routePath: string, params: Record<string, string>): string {
   let filePath = routePath
 
   // 替换动态参数

@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import type { PageMetadata } from '../types/index.js'
 
 /**
  * 扫描 pages 目录，收集所有页面文件
@@ -7,18 +8,18 @@ import path from 'path'
  * 这个模块负责递归遍历 pages 目录，识别所有的页面组件文件
  * 类似于 Next.js 中的文件系统路由扫描
  *
- * @param {string} pagesDir - pages 目录的路径
- * @returns {Array} 页面信息数组
+ * @param pagesDir - pages 目录的路径
+ * @returns 页面信息数组
  */
-export function scanPages(pagesDir) {
-  const pages = []
+export function scanPages(pagesDir: string): PageMetadata[] {
+  const pages: PageMetadata[] = []
 
   /**
    * 递归扫描目录
-   * @param {string} dir - 当前扫描的目录
-   * @param {string} basePath - 基础路径（用于生成路由路径）
+   * @param dir - 当前扫描的目录
+   * @param basePath - 基础路径（用于生成路由路径）
    */
-  function scan(dir, basePath = '') {
+  function scan(dir: string, basePath: string = ''): void {
     const files = fs.readdirSync(dir)
 
     for (const file of files) {
@@ -31,14 +32,15 @@ export function scanPages(pagesDir) {
         continue
       }
 
-      // 只处理 .jsx 和 .js 文件
-      if (!['.jsx', '.js'].includes(path.extname(file))) {
+      // 只处理 .jsx, .js, .tsx, .ts 文件
+      const ext = path.extname(file)
+      if (!['.jsx', '.js', '.tsx', '.ts'].includes(ext)) {
         continue
       }
 
       // 跳过以 _ 开头的特殊文件（_app.jsx, _document.jsx）
       // 这些文件在 Next.js 中有特殊用途，本示例暂不实现
-      const fileName = path.basename(file, path.extname(file))
+      const fileName = path.basename(file, ext)
       if (fileName.startsWith('_')) {
         continue
       }
@@ -82,11 +84,11 @@ export function scanPages(pagesDir) {
  * - blog/[id].jsx -> /blog/:id
  * - blog/[category]/[id].jsx -> /blog/:category/:id (嵌套动态路由)
  *
- * @param {string} basePath - 基础路径
- * @param {string} fileName - 文件名（不含扩展名）
- * @returns {string} 路由路径
+ * @param basePath - 基础路径
+ * @param fileName - 文件名（不含扩展名）
+ * @returns 路由路径
  */
-function generateRoutePath(basePath, fileName) {
+function generateRoutePath(basePath: string, fileName: string): string {
   // index 文件映射为目录本身
   if (fileName === 'index') {
     return basePath === '' ? '/' : `/${basePath}`
@@ -113,19 +115,19 @@ function generateRoutePath(basePath, fileName) {
  * - blog/[category]/[id].jsx -> ['category', 'id']
  * - [...slug].jsx -> ['slug'] (catch-all routes)
  *
- * @param {string} filePath - 完整文件路径或文件名
- * @returns {Array<string>} 参数名数组
+ * @param filePath - 完整文件路径或文件名
+ * @returns 参数名数组
  */
-function extractParamNames(filePath) {
+function extractParamNames(filePath: string): string[] {
   const matches = filePath.matchAll(/\[\.{0,3}(.+?)\]/g)
-  return Array.from(matches, (match) => match[1])
+  return Array.from(matches, (match) => match[1]!)
 }
 
 /**
  * 打印扫描结果（用于调试）
- * @param {Array} pages - 页面信息数组
+ * @param pages - 页面信息数组
  */
-export function printScanResult(pages) {
+export function printScanResult(pages: PageMetadata[]): void {
   console.log('\n📄 Scanned Pages:')
   console.log('=====================================')
 

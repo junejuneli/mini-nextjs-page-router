@@ -1,5 +1,4 @@
-import React from 'react'
-import Link from '../client/link.jsx'
+import Link from '../client/link.js'
 
 /**
  * 服务条款页面
@@ -14,16 +13,24 @@ import Link from '../client/link.jsx'
  *
  * 这是最常见的页面类型：营销页面、法律条款、帮助文档等。
  */
-export default function Terms() {
+export default function Terms(): JSX.Element {
   return (
     <div>
       {/* 导航栏 */}
       <nav>
         <ul>
-          <li><Link href="/">首页</Link></li>
-          <li><Link href="/about">关于</Link></li>
-          <li><Link href="/blog/1">博客</Link></li>
-          <li><Link href="/terms">条款</Link></li>
+          <li>
+            <Link href="/">首页</Link>
+          </li>
+          <li>
+            <Link href="/about">关于</Link>
+          </li>
+          <li>
+            <Link href="/blog/1">博客</Link>
+          </li>
+          <li>
+            <Link href="/terms">条款</Link>
+          </li>
         </ul>
       </nav>
 
@@ -55,9 +62,15 @@ export default function Terms() {
             </p>
             <ul>
               <li>✅ 渲染 React 组件为 HTML</li>
-              <li>✅ 生成 <code>.next/static/terms.html</code></li>
-              <li>✅ 生成 <code>.next/static/terms.json</code></li>
-              <li>✅ 即使没有 <code>getStaticProps</code>！</li>
+              <li>
+                ✅ 生成 <code>.next/static/terms.html</code>
+              </li>
+              <li>
+                ✅ 生成 <code>.next/static/terms.json</code>
+              </li>
+              <li>
+                ✅ 即使没有 <code>getStaticProps</code>！
+              </li>
             </ul>
           </div>
 
@@ -86,25 +99,44 @@ export default function Terms() {
             </thead>
             <tbody>
               <tr>
-                <td><strong>纯静态页面</strong><br/>(本页面)</td>
+                <td>
+                  <strong>纯静态页面</strong>
+                  <br />
+                  (本页面)
+                </td>
                 <td>无</td>
                 <td>✅ 生成 HTML</td>
                 <td>直接返回静态文件</td>
               </tr>
               <tr>
-                <td><strong>带数据静态页面</strong><br/>(关于页面)</td>
+                <td>
+                  <strong>带数据静态页面</strong>
+                  <br />
+                  (关于页面)
+                </td>
                 <td>getStaticProps</td>
                 <td>✅ 生成 HTML</td>
                 <td>直接返回静态文件</td>
               </tr>
               <tr>
-                <td><strong>动态路由静态页面</strong><br/>(博客页面)</td>
-                <td>getStaticPaths<br/>+ getStaticProps</td>
+                <td>
+                  <strong>动态路由静态页面</strong>
+                  <br />
+                  (博客页面)
+                </td>
+                <td>
+                  getStaticPaths
+                  <br />+ getStaticProps
+                </td>
                 <td>✅ 生成多个 HTML</td>
                 <td>直接返回对应文件</td>
               </tr>
               <tr>
-                <td><strong>服务端渲染</strong><br/>(首页)</td>
+                <td>
+                  <strong>服务端渲染</strong>
+                  <br />
+                  (首页)
+                </td>
                 <td>getServerSideProps</td>
                 <td>❌ 不生成 HTML</td>
                 <td>每次请求都渲染</td>
@@ -122,18 +154,30 @@ export default function Terms() {
             <ul>
               <li>✅ 大部分网站内容是静态的（营销页面、文档、条款等）</li>
               <li>✅ 静态内容应该享受最佳性能（CDN 缓存、零服务器计算）</li>
-              <li>✅ 不应该强制开发者添加 <code>getStaticProps</code></li>
-              <li>✅ 只有明确需要动态数据的页面才用 <code>getServerSideProps</code></li>
+              <li>
+                ✅ 不应该强制开发者添加 <code>getStaticProps</code>
+              </li>
+              <li>
+                ✅ 只有明确需要动态数据的页面才用 <code>getServerSideProps</code>
+              </li>
             </ul>
           </div>
 
           <h2>性能优势</h2>
 
           <ul>
-            <li>⚡ <strong>响应速度</strong>: &lt;10ms（直接读文件）</li>
-            <li>📦 <strong>服务器负载</strong>: 零（无需计算）</li>
-            <li>💰 <strong>成本</strong>: 最低（可用 CDN）</li>
-            <li>🔍 <strong>SEO</strong>: 完美（搜索引擎直接爬取 HTML）</li>
+            <li>
+              ⚡ <strong>响应速度</strong>: &lt;10ms（直接读文件）
+            </li>
+            <li>
+              📦 <strong>服务器负载</strong>: 零（无需计算）
+            </li>
+            <li>
+              💰 <strong>成本</strong>: 最低（可用 CDN）
+            </li>
+            <li>
+              🔍 <strong>SEO</strong>: 完美（搜索引擎直接爬取 HTML）
+            </li>
           </ul>
 
           <h2>适用场景</h2>
@@ -157,23 +201,27 @@ export default function Terms() {
 
           <h2>试试看</h2>
 
-          <p>
-            访问其他页面，观察不同的渲染策略：
-          </p>
+          <p>访问其他页面，观察不同的渲染策略：</p>
 
           <div className="blog-list">
             <div className="blog-item">
-              <Link href="/" className="button">首页（SSR）</Link>
+              <Link href="/" className="button">
+                首页（SSR）
+              </Link>
               <p>使用 getServerSideProps，每次请求都渲染</p>
             </div>
 
             <div className="blog-item">
-              <Link href="/about" className="button">关于（SSG + 数据）</Link>
+              <Link href="/about" className="button">
+                关于（SSG + 数据）
+              </Link>
               <p>使用 getStaticProps，构建时获取数据</p>
             </div>
 
             <div className="blog-item">
-              <Link href="/blog/1" className="button">博客（SSG + 动态）</Link>
+              <Link href="/blog/1" className="button">
+                博客（SSG + 动态）
+              </Link>
               <p>使用 getStaticPaths + getStaticProps</p>
             </div>
           </div>
@@ -228,7 +276,8 @@ export default function Terms() {
           margin: 1rem 0;
         }
 
-        th, td {
+        th,
+        td {
           border: 1px solid #e2e8f0;
           padding: 0.75rem;
           text-align: left;

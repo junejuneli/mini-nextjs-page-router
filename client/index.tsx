@@ -1,6 +1,7 @@
-import React from 'react'
-import { hydrateRoot } from 'react-dom/client'
-import { RouterProvider } from './router.jsx'
+import { ComponentType } from 'react'
+import { hydrateRoot, Root } from 'react-dom/client'
+import { RouterProvider } from './router.js'
+import type { NextData, ClientRoute, ViteGlobImport, PageModule } from '../types/index.js'
 
 /**
  * Client Entry Point
@@ -22,7 +23,7 @@ console.log('🚀 Mini Next.js 客户端启动...')
  *
  * Note: glob pattern must be literal string, not variable
  */
-const pageModules = import.meta.glob('../pages/**/*.jsx')
+const pageModules = import.meta.glob('../pages/**/*.{jsx,tsx}') as ViteGlobImport
 
 console.log('📦 已加载页面模块映射:', Object.keys(pageModules))
 
@@ -30,32 +31,32 @@ console.log('📦 已加载页面模块映射:', Object.keys(pageModules))
  * Global React Root instance
  * Created once during initial hydration, reused for client-side navigation
  */
-let globalRoot = null
+let globalRoot: Root | null = null
 
 /**
  * Global route manifest cache
  * Read from __NEXT_DATA__ and used for subsequent navigation
  */
-let globalManifest = null
+let globalManifest: ClientRoute[] | null = null
 
 /**
  * 获取全局 root 实例
- * @returns {ReactRoot|null} React root 实例
+ * @returns React root 实例
  */
-export function getRoot() {
+export function getRoot(): Root | null {
   return globalRoot
 }
 
 /**
  * Load page component by path
  *
- * @param {string} page - Page path (e.g., /, /about, /blog/123)
- * @param {Array} manifest - Route manifest
- * @returns {Promise<Component>} Page component
+ * @param page - Page path (e.g., /, /about, /blog/123)
+ * @param manifest - Route manifest
+ * @returns Page component
  */
-async function loadPageComponent(page, manifest) {
+async function loadPageComponent(page: string, manifest: ClientRoute[]): Promise<ComponentType> {
   // 1. 从 manifest 中查找匹配的路由
-  const route = manifest.find(r => {
+  const route = manifest.find((r) => {
     // 精确匹配
     if (r.path === page) return true
 
@@ -63,9 +64,7 @@ async function loadPageComponent(page, manifest) {
     if (r.isDynamic) {
       // 将路由模式转换为正则表达式
       // /blog/:id -> ^/blog/[^/]+$
-      const pattern = new RegExp(
-        '^' + r.path.replace(/:[^/]+/g, '[^/]+') + '$'
-      )
+      const pattern = new RegExp('^' + r.path.replace(/:[^/]+/g, '[^/]+') + '$')
       return pattern.test(page)
     }
 
@@ -91,17 +90,17 @@ async function loadPageComponent(page, manifest) {
   }
 
   // 4. ✅ 调用加载器，按需加载模块（代码分割）
-  const module = await loader()
+  const module = (await loader()) as PageModule
   return module.default
 }
 
 /**
  * 渲染页面组件
  *
- * @param {Component} PageComponent - 页面组件
- * @param {Object} props - 页面属性
+ * @param PageComponent - 页面组件
+ * @param props - 页面属性
  */
-function renderPage(PageComponent, props) {
+function renderPage(PageComponent: ComponentType<any>, props: any): void {
   const App = () => (
     <RouterProvider>
       <PageComponent {...props} />
@@ -121,7 +120,7 @@ function renderPage(PageComponent, props) {
  * 主hydrate函数
  * 将服务器渲染的 HTML 转换为完全交互式的 React 应用
  */
-async function hydrate() {
+async function hydrate(): Promise<void> {
   // 1. 读取服务器注入的数据
   const nextDataElement = document.getElementById('__NEXT_DATA__')
 
@@ -130,7 +129,7 @@ async function hydrate() {
     return
   }
 
-  const nextData = JSON.parse(nextDataElement.textContent)
+  const nextData = JSON.parse(nextDataElement.textContent || '{}') as NextData
   console.log('📦 __NEXT_DATA__:', nextData)
 
   // ✅ 保存路由清单到全局变量
@@ -142,7 +141,7 @@ async function hydrate() {
   }
 
   // 2. 使用通用函数加载页面组件
-  let PageComponent
+  let PageComponent: ComponentType
   try {
     PageComponent = await loadPageComponent(nextData.page, globalManifest)
   } catch (error) {
@@ -184,18 +183,19 @@ async function hydrate() {
  * 设置路由事件监听
  * 处理客户端导航时的页面更新
  */
-async function setupRouterEvents() {
-  const router = (await import('./router.jsx')).default
+async function setupRouterEvents(): Promise<void> {
+  const routerModule = await import('./router.js')
+  const router = routerModule.default
 
   if (!router) return
 
   // 监听路由变化
-  router.on('routeChangeComplete', async (url, data) => {
+  router.on('routeChangeComplete', async (url: string, data: any) => {
     console.log('🔄 路由已变化:', url)
 
     // ✅ 使用通用函数加载页面组件
     try {
-      const PageComponent = await loadPageComponent(data.page, globalManifest)
+      const PageComponent = await loadPageComponent(data.page, globalManifest!)
 
       // ✅ 使用通用函数渲染页面
       renderPage(PageComponent, data.pageProps)

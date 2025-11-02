@@ -1,5 +1,5 @@
-import React from 'react'
-import Link from '../client/link.jsx'
+import Link from '../client/link.js'
+import type { GetStaticPropsResult } from '../types/index.js'
 
 /**
  * 关于页面组件
@@ -7,15 +7,32 @@ import Link from '../client/link.jsx'
  * 演示 SSG（静态生成）
  * 使用 getStaticProps 在构建时生成静态 HTML
  */
-export default function About({ buildTime, projectInfo }) {
+
+interface AboutProps {
+  buildTime: string
+  projectInfo: {
+    name: string
+    version: string
+    description: string
+    features: string[]
+  }
+}
+
+export default function About({ buildTime, projectInfo }: AboutProps): JSX.Element {
   return (
     <div>
       {/* 导航栏 */}
       <nav>
         <ul>
-          <li><Link href="/">首页</Link></li>
-          <li><Link href="/about">关于</Link></li>
-          <li><Link href="/blog/1">博客</Link></li>
+          <li>
+            <Link href="/">首页</Link>
+          </li>
+          <li>
+            <Link href="/about">关于</Link>
+          </li>
+          <li>
+            <Link href="/blog/1">博客</Link>
+          </li>
         </ul>
       </nav>
 
@@ -30,10 +47,18 @@ export default function About({ buildTime, projectInfo }) {
           </p>
 
           <h2>项目信息</h2>
-          <p><strong>名称:</strong> {projectInfo.name}</p>
-          <p><strong>版本:</strong> {projectInfo.version}</p>
-          <p><strong>描述:</strong> {projectInfo.description}</p>
-          <p><strong>构建时间:</strong> {buildTime}</p>
+          <p>
+            <strong>名称:</strong> {projectInfo.name}
+          </p>
+          <p>
+            <strong>版本:</strong> {projectInfo.version}
+          </p>
+          <p>
+            <strong>描述:</strong> {projectInfo.description}
+          </p>
+          <p>
+            <strong>构建时间:</strong> {buildTime}
+          </p>
 
           <p>
             这个页面是在构建时（运行 <code>npm run build</code> 时）预渲染的。
@@ -78,30 +103,30 @@ export default function About({ data }) {
               <h3>构建时生成</h3>
               <p>
                 运行 <code>npm run build</code> 时，Mini Next.js 会调用
-                <code>getStaticProps</code>，获取数据并渲染组件，
-                生成 HTML 和 JSON 文件保存到 <code>.next/static/</code> 目录。
+                <code>getStaticProps</code>，获取数据并渲染组件， 生成 HTML 和 JSON 文件保存到{' '}
+                <code>.next/static/</code> 目录。
               </p>
             </div>
 
             <div className="blog-item">
               <h3>运行时服务</h3>
               <p>
-                当用户访问这个页面时，服务器直接读取预生成的 HTML 文件返回，
-                无需重新渲染，速度非常快。
+                当用户访问这个页面时，服务器直接读取预生成的 HTML 文件返回， 无需重新渲染，速度非常快。
               </p>
             </div>
 
             <div className="blog-item">
               <h3>客户端hydrate</h3>
               <p>
-                浏览器接收到 HTML 后，加载 JavaScript bundle，
-                React 进行hydrate，页面变为完全交互式。
+                浏览器接收到 HTML 后，加载 JavaScript bundle， React 进行hydrate，页面变为完全交互式。
               </p>
             </div>
           </div>
 
           <div style={{ marginTop: '2rem' }}>
-            <Link href="/" className="button">返回首页</Link>
+            <Link href="/" className="button">
+              返回首页
+            </Link>
           </div>
         </div>
       </div>
@@ -119,9 +144,9 @@ export default function About({ data }) {
  * 这个函数在构建时运行
  * 返回的 props 会传递给页面组件，并生成静态 HTML
  *
- * @returns {Object} 包含 props 的对象
+ * @returns 包含 props 的对象
  */
-export async function getStaticProps() {
+export async function getStaticProps(): Promise<GetStaticPropsResult<AboutProps>> {
   // 模拟数据获取
   const buildTime = new Date().toLocaleString('zh-CN', {
     timeZone: 'Asia/Shanghai',

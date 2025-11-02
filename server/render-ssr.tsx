@@ -2,6 +2,8 @@ import React from 'react'
 import ReactDOMServer from 'react-dom/server'
 import path from 'path'
 import { getClientManifest } from './router.js'
+import type { Request, Response } from 'express'
+import type { MatchResult, PageModule, NextData } from '../types/index.js'
 
 /**
  * SSR 渲染器
@@ -13,33 +15,38 @@ import { getClientManifest } from './router.js'
 /**
  * 渲染 SSR 页面
  *
- * @param {Object} matchResult - 路由匹配结果
- * @param {Object} req - Express 请求对象
- * @param {Object} res - Express 响应对象
- * @param {string} projectRoot - 项目根目录
- * @returns {Promise<string>} HTML 字符串
+ * @param matchResult - 路由匹配结果
+ * @param req - Express 请求对象
+ * @param res - Express 响应对象
+ * @param projectRoot - 项目根目录
+ * @returns HTML 字符串
  */
-export async function renderSSR(matchResult, req, res, projectRoot) {
+export async function renderSSR(
+  matchResult: MatchResult,
+  req: Request,
+  res: Response,
+  projectRoot: string
+): Promise<string> {
   const { route, params } = matchResult
 
   try {
     // 1. 动态加载页面组件
     // 使用 file:// 协议和绝对路径来支持 ESM
     const componentPath = path.resolve(route.componentPath)
-    const pageModule = await import(`file://${componentPath}`)
+    const pageModule = (await import(`file://${componentPath}`)) as PageModule
 
     const PageComponent = pageModule.default
     const { getServerSideProps } = pageModule
 
-    let pageProps = {}
+    let pageProps: any = {}
 
     // 2. 如果存在 getServerSideProps，调用它获取数据
     if (getServerSideProps) {
       const context = {
-        params,         // 路由参数
-        req,            // 请求对象
-        res,            // 响应对象
-        query: req.query, // 查询参数
+        params, // 路由参数
+        req, // 请求对象
+        res, // 响应对象
+        query: req.query as Record<string, string>, // 查询参数
       }
 
       const result = await getServerSideProps(context)
@@ -47,9 +54,7 @@ export async function renderSSR(matchResult, req, res, projectRoot) {
     }
 
     // 3. 使用 ReactDOMServer 渲染组件为 HTML 字符串
-    const appHtml = ReactDOMServer.renderToString(
-      React.createElement(PageComponent, pageProps)
-    )
+    const appHtml = ReactDOMServer.renderToString(React.createElement(PageComponent, pageProps))
 
     // 4. 生成完整的 HTML 文档
     const html = generateHTMLDocument({
@@ -62,7 +67,8 @@ export async function renderSSR(matchResult, req, res, projectRoot) {
 
     return html
   } catch (error) {
-    console.error(`❌ SSR 渲染失败:`, error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(`❌ SSR 渲染失败:`, message)
     throw error
   }
 }
@@ -70,24 +76,33 @@ export async function renderSSR(matchResult, req, res, projectRoot) {
 /**
  * 获取 SSR 页面的 JSON 数据（用于客户端导航）
  *
- * @param {Object} matchResult - 路由匹配结果
- * @param {Object} req - Express 请求对象
- * @param {Object} res - Express 响应对象
- * @returns {Promise<Object>} 页面数据
+ * @param matchResult - 路由匹配结果
+ * @param req - Express 请求对象
+ * @param res - Express 响应对象
+ * @returns 页面数据
  */
-export async function getSSRData(matchResult, req, res) {
+export async function getSSRData(
+  matchResult: MatchResult,
+  req: Request,
+  res: Response
+): Promise<{ pageProps: any; query: Record<string, string> }> {
   const { route, params } = matchResult
 
   try {
     const componentPath = path.resolve(route.componentPath)
-    const pageModule = await import(`file://${componentPath}`)
+    const pageModule = (await import(`file://${componentPath}`)) as PageModule
 
     const { getServerSideProps } = pageModule
 
-    let pageProps = {}
+    let pageProps: any = {}
 
     if (getServerSideProps) {
-      const context = { params, req, res, query: req.query }
+      const context = {
+        params,
+        req,
+        res,
+        query: req.query as Record<string, string>,
+      }
       const result = await getServerSideProps(context)
       pageProps = result.props || {}
     }
@@ -97,7 +112,8 @@ export async function getSSRData(matchResult, req, res) {
       query: params,
     }
   } catch (error) {
-    console.error(`❌ 获取 SSR 数据失败:`, error)
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(`❌ 获取 SSR 数据失败:`, message)
     throw error
   }
 }
@@ -105,13 +121,25 @@ export async function getSSRData(matchResult, req, res) {
 /**
  * 生成完整的 HTML 文档
  *
- * @param {Object} options - 选项
- * @returns {string} HTML 字符串
+ * @param options - 选项
+ * @returns HTML 字符串
  */
-function generateHTMLDocument({ appHtml, pageProps, route, params, projectRoot }) {
+function generateHTMLDocument({
+  appHtml,
+  pageProps,
+  route,
+  params,
+  projectRoot,
+}: {
+  appHtml: string
+  pageProps: any
+  route: string
+  params: Record<string, string>
+  projectRoot: string
+}): string {
   // __NEXT_DATA__ 包含页面所需的所有初始数据
   // 客户端会读取这个数据进行水合
-  const nextData = {
+  const nextData: NextData = {
     props: { pageProps },
     page: route,
     query: params,

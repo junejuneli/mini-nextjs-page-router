@@ -1,3 +1,5 @@
+import type { PageMetadata, Route, RouteManifest } from '../types/index.js'
+
 /**
  * 生成路由映射清单
  *
@@ -8,11 +10,11 @@
 /**
  * 生成路由清单
  *
- * @param {Array} pages - 扫描到的页面信息数组
- * @returns {Object} 路由清单
+ * @param pages - 扫描到的页面信息数组
+ * @returns 路由清单
  */
-export function generateRoutes(pages) {
-  const routes = pages.map((page) => ({
+export function generateRoutes(pages: PageMetadata[]): RouteManifest {
+  const routes: Route[] = pages.map((page) => ({
     // 路由路径（如 /blog/:id）
     path: page.routePath,
 
@@ -47,10 +49,10 @@ export function generateRoutes(pages) {
  * - /about -> ^/about$
  * - /blog/:id -> ^/blog/([^/]+)$
  *
- * @param {string} routePath - 路由路径
- * @returns {string} 正则表达式字符串
+ * @param routePath - 路由路径
+ * @returns 正则表达式字符串
  */
-function pathToRegex(routePath) {
+function pathToRegex(routePath: string): string {
   // 转义特殊字符
   let pattern = routePath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -64,9 +66,9 @@ function pathToRegex(routePath) {
 
 /**
  * 打印路由清单（用于调试）
- * @param {Object} manifest - 路由清单
+ * @param manifest - 路由清单
  */
-export function printRouteManifest(manifest) {
+export function printRouteManifest(manifest: RouteManifest): void {
   console.log('\n🗺️  Route Manifest:')
   console.log('=====================================')
 

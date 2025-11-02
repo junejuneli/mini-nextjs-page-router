@@ -1,5 +1,5 @@
-import React from 'react'
-import { useRouter } from './router.jsx'
+import React, { ReactNode, AnchorHTMLAttributes } from 'react'
+import { useRouter } from './router.js'
 
 /**
  * Link 组件
@@ -18,7 +18,19 @@ import { useRouter } from './router.jsx'
  * <Link href="/blog/123" prefetch={false}>博客文章</Link>
  * ```
  */
-export default function Link({ href, children, prefetch = true, ...props }) {
+
+interface LinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
+  href: string
+  children: ReactNode
+  prefetch?: boolean
+}
+
+export default function Link({
+  href,
+  children,
+  prefetch = true,
+  ...props
+}: LinkProps): JSX.Element {
   // ✅ 总是调用 Hook（符合 React Hooks 规则）
   // 不能在条件语句中调用 Hook！
   // useRouter 在 SSR 时返回 null，在客户端返回 router 实例
@@ -39,7 +51,7 @@ export default function Link({ href, children, prefetch = true, ...props }) {
    * 点击链接时的处理函数
    * 阻止默认跳转行为，使用客户端路由导航
    */
-  const handleClick = (e) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     // 如果按住 Ctrl/Cmd 键，允许在新标签页打开
     if (e.metaKey || e.ctrlKey) {
       return
@@ -63,12 +75,7 @@ export default function Link({ href, children, prefetch = true, ...props }) {
   }
 
   return (
-    <a
-      href={href}
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      {...props}
-    >
+    <a href={href} onClick={handleClick} onMouseEnter={handleMouseEnter} {...props}>
       {children}
     </a>
   )

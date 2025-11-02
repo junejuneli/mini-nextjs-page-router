@@ -1,5 +1,9 @@
-import React from 'react'
-import Link from '../../client/link.jsx'
+import Link from '../../client/link.js'
+import type {
+  GetStaticPathsResult,
+  GetStaticPropsContext,
+  GetStaticPropsResult,
+} from '../../types/index.js'
 
 /**
  * 博客文章页面组件
@@ -8,16 +12,37 @@ import Link from '../../client/link.jsx'
  * 使用 getStaticPaths 生成所有可能的路径
  * 使用 getStaticProps 为每个路径生成静态页面
  */
-export default function BlogPost({ post }) {
+
+interface Post {
+  id: string
+  title: string
+  author: string
+  date: string
+  content: string
+}
+
+interface BlogPostProps {
+  post: Post
+}
+
+export default function BlogPost({ post }: BlogPostProps): JSX.Element {
   return (
     <div>
       {/* 导航栏 */}
       <nav>
         <ul>
-          <li><Link href="/">首页</Link></li>
-          <li><Link href="/about">关于</Link></li>
-          <li><Link href="/blog/1">博客</Link></li>
-          <li><Link href="/blog/tech/1">嵌套路由</Link></li>
+          <li>
+            <Link href="/">首页</Link>
+          </li>
+          <li>
+            <Link href="/about">关于</Link>
+          </li>
+          <li>
+            <Link href="/blog/1">博客</Link>
+          </li>
+          <li>
+            <Link href="/blog/tech/1">嵌套路由</Link>
+          </li>
         </ul>
       </nav>
 
@@ -43,9 +68,7 @@ export default function BlogPost({ post }) {
 
           <h2>动态路由 + 静态生成</h2>
 
-          <p>
-            这个页面展示了如何结合动态路由和静态生成：
-          </p>
+          <p>这个页面展示了如何结合动态路由和静态生成：</p>
 
           <ul>
             <li>
@@ -109,7 +132,9 @@ export default function BlogPost({ post }) {
           </div>
 
           <div style={{ marginTop: '2rem' }}>
-            <Link href="/" className="button">返回首页</Link>
+            <Link href="/" className="button">
+              返回首页
+            </Link>
           </div>
         </div>
       </div>
@@ -126,20 +151,16 @@ export default function BlogPost({ post }) {
  *
  * 这个函数在构建时运行，返回所有需要预渲染的动态路由路径
  *
- * @returns {Object} 包含 paths 数组的对象
+ * @returns 包含 paths 数组的对象
  */
-export async function getStaticPaths() {
+export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   // 在真实项目中，这里通常会：
   // 1. 从数据库查询所有文章 ID
   // 2. 从 CMS 或 API 获取内容列表
   // 3. 读取文件系统中的 markdown 文件
 
   // 这里我们手动指定要生成的路径
-  const paths = [
-    { params: { id: '1' } },
-    { params: { id: '2' } },
-    { params: { id: '3' } },
-  ]
+  const paths = [{ params: { id: '1' } }, { params: { id: '2' } }, { params: { id: '3' } }]
 
   return {
     paths,
@@ -152,12 +173,14 @@ export async function getStaticPaths() {
  *
  * 这个函数为每个路径运行，获取对应的数据
  *
- * @param {Object} context - 上下文对象，包含 params
- * @returns {Object} 包含 props 的对象
+ * @param context - 上下文对象，包含 params
+ * @returns 包含 props 的对象
  */
-export async function getStaticProps({ params }) {
+export async function getStaticProps({
+  params,
+}: GetStaticPropsContext): Promise<GetStaticPropsResult<BlogPostProps>> {
   // 模拟从数据库或 API 获取文章数据
-  const posts = {
+  const posts: Record<string, Post> = {
     '1': {
       id: '1',
       title: '深入理解 Next.js Page Router',
@@ -199,11 +222,11 @@ React 会验证服务器和客户端的渲染结果是否一致，如果不一�
     },
   }
 
-  const post = posts[params.id] || {
-    id: params.id,
+  const post: Post = posts[params.id!] || {
+    id: params.id || 'unknown',
     title: '文章未找到',
     author: 'Unknown',
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0] || '',
     content: '抱歉，找不到这篇文章。',
   }
 

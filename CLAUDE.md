@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a ~700-line educational implementation of Next.js Page Router that demonstrates core SSR/SSG concepts. It's designed for learning, not production use.
+This is a ~700-line educational implementation of Next.js Page Router that demonstrates core SSR/SSG concepts, written in TypeScript. It's designed for learning, not production use.
 
 ## Quick Start
 
@@ -23,23 +23,37 @@ Visit http://localhost:3000
 ### 1. Adding New Pages
 
 **SSG Page** (Static Site Generation):
-```jsx
-// pages/newpage.jsx
-export async function getStaticProps() {
+```tsx
+// pages/newpage.tsx
+import type { GetStaticPropsResult } from '../types/index.js'
+
+interface NewPageProps {
+  data: string
+}
+
+export async function getStaticProps(): Promise<GetStaticPropsResult<NewPageProps>> {
   return { props: { data: 'Hello' } }
 }
-export default function NewPage({ data }) {
+
+export default function NewPage({ data }: NewPageProps) {
   return <div>{data}</div>
 }
 ```
 
 **SSR Page** (Server-Side Rendering):
-```jsx
-// pages/dynamic.jsx
-export async function getServerSideProps() {
+```tsx
+// pages/dynamic.tsx
+import type { GetServerSidePropsResult } from '../types/index.js'
+
+interface DynamicProps {
+  time: string
+}
+
+export async function getServerSideProps(): Promise<GetServerSidePropsResult<DynamicProps>> {
   return { props: { time: new Date().toISOString() } }
 }
-export default function Dynamic({ time }) {
+
+export default function Dynamic({ time }: DynamicProps) {
   return <div>{time}</div>
 }
 ```
@@ -47,9 +61,15 @@ export default function Dynamic({ time }) {
 ### 2. Adding Dynamic Routes
 
 **Single-Level Dynamic Route**:
-```jsx
-// pages/blog/[id].jsx
-export async function getStaticPaths() {
+```tsx
+// pages/blog/[id].tsx
+import type { GetStaticPathsResult, GetStaticPropsContext, GetStaticPropsResult } from '../../types/index.js'
+
+interface BlogPostProps {
+  id: string
+}
+
+export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   return {
     paths: [
       { params: { id: '1' } },
@@ -59,15 +79,26 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params }: GetStaticPropsContext): Promise<GetStaticPropsResult<BlogPostProps>> {
   return { props: { id: params.id } }
+}
+
+export default function BlogPost({ id }: BlogPostProps) {
+  return <div>Post {id}</div>
 }
 ```
 
 **Nested Dynamic Route**:
-```jsx
-// pages/blog/[category]/[id].jsx
-export async function getStaticPaths() {
+```tsx
+// pages/blog/[category]/[id].tsx
+import type { GetStaticPathsResult, GetStaticPropsContext, GetStaticPropsResult } from '../../../types/index.js'
+
+interface NestedBlogPostProps {
+  category: string
+  id: string
+}
+
+export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   return {
     paths: [
       { params: { category: 'tech', id: '1' } },
@@ -77,16 +108,20 @@ export async function getStaticPaths() {
   }
 }
 
-export async function getStaticProps({ params }) {
+export async function getStaticProps({ params }: GetStaticPropsContext): Promise<GetStaticPropsResult<NestedBlogPostProps>> {
   const { category, id } = params
   return { props: { category, id } }
+}
+
+export default function NestedBlogPost({ category, id }: NestedBlogPostProps) {
+  return <div>{category}/{id}</div>
 }
 ```
 
 ### 3. Client-Side Navigation
 
-```jsx
-import Link from '../client/link.jsx'
+```tsx
+import Link from '../client/link.js'
 
 <Link href="/about">About</Link>  // SPA navigation without page refresh
 ```
@@ -114,19 +149,19 @@ import Link from '../client/link.jsx'
 3. **Understand Core Architecture**
 
    **Build System** (`build/`):
-   - `scan-pages.js` - Scans pages/ directory, extracts dynamic parameters
-   - `generate-routes.js` - Generates route rules and regex patterns
-   - `render-static.js` - Pre-renders SSG pages
+   - `scan-pages.ts` - Scans pages/ directory, extracts dynamic parameters
+   - `generate-routes.ts` - Generates route rules and regex patterns
+   - `render-static.ts` - Pre-renders SSG pages
 
    **Server** (`server/`):
-   - `router.js` - Route matching and parameter extraction
-   - `render-ssr.js` - Dynamic SSR rendering
-   - `render-ssg.js` - Serves pre-rendered SSG files
+   - `router.ts` - Route matching and parameter extraction
+   - `render-ssr.tsx` - Dynamic SSR rendering
+   - `render-ssg.ts` - Serves pre-rendered SSG files
 
    **Client** (`client/`):
-   - `index.jsx` - Hydration and component loading
-   - `router.jsx` - Client-side router
-   - `link.jsx` - Link component with prefetching
+   - `index.tsx` - Hydration and component loading
+   - `router.tsx` - Client-side router
+   - `link.tsx` - Link component with prefetching
 
 4. **Experiment and Modify**
    - Add new SSG/SSR pages
@@ -177,9 +212,9 @@ import Link from '../client/link.jsx'
 ### Technical Constraints
 
 - Vite's `import.meta.glob()` requires literal string patterns
-- All files use ESM (`import/export`)
+- All files use ESM (`import/export`) and TypeScript
 - Dynamic routes require `getStaticPaths` to specify all paths
-- `index.jsx` maps to directory path
+- `index.tsx` maps to directory path
 
 ### Reference Documentation
 

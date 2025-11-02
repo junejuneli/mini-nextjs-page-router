@@ -19,7 +19,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // 客户端入口文件
-        client: resolve(__dirname, 'client/index.jsx'),
+        client: resolve(__dirname, 'client/index.tsx'),
       },
       output: {
         // 输出格式

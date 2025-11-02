@@ -2,6 +2,15 @@ import fs from 'fs'
 import path from 'path'
 import React from 'react'
 import ReactDOMServer from 'react-dom/server'
+import type {
+  Route,
+  RouteManifest,
+  RenderResult,
+  RenderSinglePageOptions,
+  PageModule,
+  ClientRoute,
+  GenerateHTMLOptions,
+} from '../types/index.js'
 
 /**
  * 静态页面渲染器
@@ -15,7 +24,7 @@ import ReactDOMServer from 'react-dom/server'
  * Node.js 默认不支持 .jsx 扩展名，需要转译器。
  *
  * 解决方案：使用 tsx 运行构建脚本
- * - package.json 中已配置：`"build": "tsx build/index.js"`
+ * - package.json 中已配置：`"build": "tsx build/index.ts"`
  * - tsx 是一个快速的 TypeScript/JSX 执行器，基于 esbuild
  * - 它会在运行时自动转译 .jsx 文件
  */
@@ -33,16 +42,21 @@ import ReactDOMServer from 'react-dom/server'
  * 5. 渲染组件为 HTML
  * 6. 保存 HTML 和 JSON 文件
  *
- * @param {Object} route - 路由信息
- * @param {string} outputDir - 输出目录
- * @param {Object} manifest - 完整的路由清单（用于注入到客户端）
- * @param {string} projectRoot - 项目根目录
- * @returns {Promise<Object>} 渲染结果
+ * @param route - 路由信息
+ * @param outputDir - 输出目录
+ * @param manifest - 完整的路由清单（用于注入到客户端）
+ * @param projectRoot - 项目根目录
+ * @returns 渲染结果
  */
-export async function renderStaticPage(route, outputDir = '.next/static', manifest, projectRoot) {
+export async function renderStaticPage(
+  route: Route,
+  outputDir: string = '.next/static',
+  manifest: RouteManifest,
+  projectRoot: string
+): Promise<RenderResult> {
   try {
     // 动态加载页面组件（使用 import() 而不是 require，支持 ESM）
-    const pageModule = await import(`file://${path.resolve(route.componentPath)}`)
+    const pageModule = (await import(`file://${path.resolve(route.componentPath)}`)) as PageModule
     const PageComponent = pageModule.default
 
     // 检查页面导出的数据获取函数
@@ -91,11 +105,11 @@ export async function renderStaticPage(route, outputDir = '.next/static', manife
     // ✅ 静态路由：默认进行静态生成
     console.log(`\n📝 生成静态页面 ${route.path}...`)
 
-    let pageProps = {}
+    let pageProps: any = {}
 
     // 如果有 getStaticProps，调用它获取数据
     if (getStaticProps) {
-      const result = await getStaticProps({})
+      const result = await getStaticProps({ params: {} })
       pageProps = result.props || {}
     }
     // else: 纯静态页面，使用空 props
@@ -113,8 +127,9 @@ export async function renderStaticPage(route, outputDir = '.next/static', manife
     const renderType = getStaticProps ? 'ssg-with-data' : 'ssg-pure'
     return { success: true, count: 1, type: renderType }
   } catch (error) {
-    console.error(`❌ 渲染 ${route.path} 失败:`, error.message)
-    return { success: false, error: error.message }
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(`❌ 渲染 ${route.path} 失败:`, message)
+    return { success: false, error: message }
   }
 }
 
@@ -123,7 +138,7 @@ export async function renderStaticPage(route, outputDir = '.next/static', manife
  *
  * ✨ 改进：支持动态路由和纯静态页面
  *
- * @param {Object} options - 渲染选项
+ * @param options - 渲染选项
  */
 async function renderSinglePage({
   route,
@@ -134,7 +149,7 @@ async function renderSinglePage({
   outputDir,
   manifest,
   projectRoot,
-}) {
+}: RenderSinglePageOptions): Promise<void> {
   // 1. 获取页面数据
   let pageProps = props
 
@@ -150,9 +165,7 @@ async function renderSinglePage({
   }
 
   // 2. 使用 ReactDOMServer 渲染组件为 HTML 字符串
-  const appHtml = ReactDOMServer.renderToString(
-    React.createElement(PageComponent, pageProps)
-  )
+  const appHtml = ReactDOMServer.renderToString(React.createElement(PageComponent, pageProps))
 
   // 3. 生成完整的 HTML 文档
   const html = generateHTMLDocument({
@@ -188,17 +201,22 @@ async function renderSinglePage({
 /**
  * 生成完整的 HTML 文档
  *
- * @param {Object} options - 选项
- * @returns {string} HTML 字符串
+ * @param options - 选项
+ * @returns HTML 字符串
  */
-function generateHTMLDocument({ appHtml, pageProps, route, params, manifest, projectRoot }) {
+function generateHTMLDocument({
+  appHtml,
+  pageProps,
+  route,
+  params,
+  manifest,
+  projectRoot,
+}: GenerateHTMLOptions): string {
   // 生成客户端路由清单（精简版）
-  const clientManifest = manifest.routes.map(r => ({
+  const clientManifest: ClientRoute[] = manifest.routes.map((r) => ({
     path: r.path,
     // 转换为相对于 pages 目录的路径
-    componentPath: r.componentPath
-      .replace(projectRoot, '')
-      .replace('/pages', ''),
+    componentPath: r.componentPath.replace(projectRoot, '').replace('/pages', ''),
     isDynamic: r.isDynamic,
     paramNames: r.paramNames,
   }))
@@ -239,11 +257,11 @@ function generateHTMLDocument({ appHtml, pageProps, route, params, manifest, pro
  * - /blog/:id + {id: '123'} -> /blog/123
  * - /blog/:category/:id + {category: 'tech', id: '123'} -> /blog/tech/123
  *
- * @param {string} routePath - 路由路径
- * @param {Object} params - 参数对象
- * @returns {string} 输出路径
+ * @param routePath - 路由路径
+ * @param params - 参数对象
+ * @returns 输出路径
  */
-function getOutputPath(routePath, params) {
+function getOutputPath(routePath: string, params: Record<string, string>): string {
   let outputPath = routePath
 
   // 替换所有动态参数（支持多个参数）

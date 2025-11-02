@@ -1,5 +1,5 @@
-import React from 'react'
-import Link from '../../client/link.jsx'
+import Link from '../../client/link.js'
+import type { GetStaticPathsResult } from '../../types/index.js'
 
 /**
  * Test page: Dynamic route with getStaticPaths but NO getStaticProps
@@ -7,15 +7,28 @@ import Link from '../../client/link.jsx'
  * This tests the fixed logic that allows SSG without getStaticProps
  * The page should render with empty props
  */
-export default function Product({ id }) {
+
+interface ProductProps {
+  id?: string
+}
+
+export default function Product({ id }: ProductProps): JSX.Element {
   return (
     <div>
       <nav>
         <ul>
-          <li><Link href="/">Home</Link></li>
-          <li><Link href="/about">About</Link></li>
-          <li><Link href="/product/1">Product 1</Link></li>
-          <li><Link href="/product/2">Product 2</Link></li>
+          <li>
+            <Link href="/">Home</Link>
+          </li>
+          <li>
+            <Link href="/about">About</Link>
+          </li>
+          <li>
+            <Link href="/product/1">Product 1</Link>
+          </li>
+          <li>
+            <Link href="/product/2">Product 2</Link>
+          </li>
         </ul>
       </nav>
 
@@ -35,8 +48,12 @@ export default function Product({ id }) {
             <h3>Test Case</h3>
             <p>This page demonstrates:</p>
             <ul>
-              <li>✅ Dynamic route with <code>getStaticPaths</code></li>
-              <li>✅ NO <code>getStaticProps</code> (should use empty props)</li>
+              <li>
+                ✅ Dynamic route with <code>getStaticPaths</code>
+              </li>
+              <li>
+                ✅ NO <code>getStaticProps</code> (should use empty props)
+              </li>
               <li>✅ Should be pre-rendered as SSG</li>
               <li>✅ ID should be undefined (no props passed)</li>
             </ul>
@@ -61,7 +78,9 @@ export default function Product({ id }) {
           </div>
 
           <div style={{ marginTop: '2rem' }}>
-            <Link href="/" className="button">Back to Home</Link>
+            <Link href="/" className="button">
+              Back to Home
+            </Link>
           </div>
         </div>
       </div>
@@ -79,13 +98,9 @@ export default function Product({ id }) {
  * Note: We intentionally do NOT export getStaticProps
  * to test that the build system handles this correctly
  */
-export async function getStaticPaths() {
+export async function getStaticPaths(): Promise<GetStaticPathsResult> {
   return {
-    paths: [
-      { params: { id: '1' } },
-      { params: { id: '2' } },
-      { params: { id: '3' } },
-    ],
+    paths: [{ params: { id: '1' } }, { params: { id: '2' } }, { params: { id: '3' } }],
     fallback: false,
   }
 }
